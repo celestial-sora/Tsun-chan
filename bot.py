@@ -1,8 +1,10 @@
 import os
 import discord
+from discord import app_commands
 import google.generativeai as genai
 from dotenv import load_dotenv
 from supabase import create_client, Client
+from mcstatus import JavaServer
 
 # Load environment variables
 load_dotenv()
@@ -11,6 +13,7 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+MC_SERVER_IP = os.getenv("MC_SERVER_IP", "127.0.0.1:25565")
 
 # Check for required variables
 if not DISCORD_TOKEN:
@@ -51,7 +54,79 @@ model = genai.GenerativeModel(
 # Discord Bot Setup
 intents = discord.Intents.default()
 intents.message_content = True
-client = discord.Client(intents=intents)
+
+class TsunClient(discord.Client):
+    def __init__(self, intents: discord.Intents):
+        super().__init__(intents=intents)
+        self.tree = app_commands.CommandTree(self)
+
+    async def setup_hook(self):
+        # Sync the global commands
+        try:
+            synced = await self.tree.sync()
+            print(f"Synced {len(synced)} command(s) globally.")
+        except Exception as e:
+            print(f"Failed to sync commands: {e}")
+
+client = TsunClient(intents=intents)
+
+def get_mc_status(ip_str: str):
+    """Pings a Minecraft server dynamically and returns its status."""
+    try:
+        server = JavaServer.lookup(ip_str)
+        status = server.status()
+        return {
+            "online": True,
+            "players_online": status.players.online,
+            "players_max": status.players.max,
+            "latency": round(status.latency, 1),
+            "version": status.version.name
+        }
+    except Exception as e:
+        print(f"Minecraft ping error: {e}")
+        return {
+            "online": False
+        }
+
+@client.tree.command(name="mcstatus", description="เช็กสถานะของ Minecraft Server")
+async def mcstatus(interaction: discord.Interaction):
+    await interaction.response.defer() # Defer because lookup and status check can block for a second
+    
+    status_info = get_mc_status(MC_SERVER_IP)
+    
+    if status_info["online"]:
+        players_online = status_info["players_online"]
+        players_max = status_info["players_max"]
+        latency = status_info["latency"]
+        version = status_info["version"]
+        
+        reply = (
+            f"ชิ! ตรวจสอบให้แล้วล่ะ... **เซิร์ฟเวอร์เปิดอยู่หรอกนะ!**\n"
+            f"🟢 **สถานะ:** ออนไลน์\n"
+            f"👥 **ผู้เล่น:** {players_online}/{players_max} คน\n"
+            f"📶 **ความหน่วง (Ping):** {latency} ms\n"
+            f"🏷️ **เวอร์ชัน:** {version}\n"
+            f"🔗 **IP:** `{MC_SERVER_IP}`\n"
+            f"*...ไม่ได้ทำเพราะอยากให้เข้าไปเล่นด้วยกันหรอกนะตาบ้า! อย่าเข้าใจผิดล่ะ!*"
+        )
+    else:
+        reply = (
+            f"หึ... ตรวจสอบแล้ว **เซิร์ฟเวอร์ปิดอยู่น่ะสิ!**\n"
+            f"🔴 **สถานะ:** ออฟไลน์\n"
+            f"🔗 **IP:** `{MC_SERVER_IP}`\n"
+            f"*เซิร์ฟเวอร์ล่มหรือปิดอยู่รึเปล่าเนี่ย? ตาบ้าเอ๊ย ไปเช็กดูหน่อยสิ!*"
+        )
+        
+    await interaction.followup.send(reply)
+
+@client.tree.command(name="mcip", description="บอก IP Address ของ Minecraft Server")
+async def mcip(interaction: discord.Interaction):
+    reply = (
+        f"ห-หืม? อยากได้ IP เซิร์ฟเวอร์ไปทำไมกันเล่า? อ่ะ... เอาไปสิ:\n"
+        f"🔗 IP Server: `{MC_SERVER_IP}`\n"
+        f"*รีบๆ เข้าไปเล่นได้แล้ว... ไม่ได้รออยู่หรอกนะ!*"
+    )
+    await interaction.response.send_message(reply)
 
 MAX_HISTORY_TURNS = 20  # Limit to 20 turns of conversation (40 messages total)
 
