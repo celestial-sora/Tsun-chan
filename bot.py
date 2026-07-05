@@ -96,6 +96,11 @@ async def mcstatus(interaction: discord.Interaction):
     
     status_info = get_mc_status(MC_SERVER_IP)
     
+    # Split Bedrock IP and Port
+    bedrock_parts = MC_BEDROCK_IP.split(":")
+    bedrock_ip = bedrock_parts[0]
+    bedrock_port = bedrock_parts[1] if len(bedrock_parts) > 1 else "19132"
+    
     if status_info["online"]:
         players_online = status_info["players_online"]
         players_max = status_info["players_max"]
@@ -109,7 +114,8 @@ async def mcstatus(interaction: discord.Interaction):
             f"📶 **ความหน่วง (Ping):** {latency} ms\n"
             f"🏷️ **เวอร์ชัน:** {version}\n"
             f"☕ **Java IP:** `{MC_SERVER_IP}`\n"
-            f"📱 **Bedrock IP:** `{MC_BEDROCK_IP}`\n"
+            f"📱 **Bedrock IP:** `{bedrock_ip}`\n"
+            f"🔌 **Bedrock Port:** `{bedrock_port}`\n"
             f"*...ไม่ได้ทำเพราะอยากให้เข้าไปเล่นด้วยกันหรอกนะตาบ้า! อย่าเข้าใจผิดล่ะ!*"
         )
     else:
@@ -117,7 +123,8 @@ async def mcstatus(interaction: discord.Interaction):
             f"หึ... ตรวจสอบแล้ว **เซิร์ฟเวอร์ปิดอยู่น่ะสิ!**\n"
             f"🔴 **สถานะ:** ออฟไลน์\n"
             f"🔗 **Java IP:** `{MC_SERVER_IP}`\n"
-            f"📱 **Bedrock IP:** `{MC_BEDROCK_IP}`\n"
+            f"📱 **Bedrock IP:** `{bedrock_ip}`\n"
+            f"🔌 **Bedrock Port:** `{bedrock_port}`\n"
             f"*เซิร์ฟเวอร์ล่มหรือปิดอยู่รึเปล่าเนี่ย? ตาบ้าเอ๊ย ไปเช็กดูหน่อยสิ!*"
         )
         
@@ -125,10 +132,16 @@ async def mcstatus(interaction: discord.Interaction):
 
 @client.tree.command(name="mcip", description="บอก IP Address ของ Minecraft Server")
 async def mcip(interaction: discord.Interaction):
+    # Split Bedrock IP and Port
+    bedrock_parts = MC_BEDROCK_IP.split(":")
+    bedrock_ip = bedrock_parts[0]
+    bedrock_port = bedrock_parts[1] if len(bedrock_parts) > 1 else "19132"
+    
     reply = (
         f"ห-หืม? อยากได้ IP เซิร์ฟเวอร์ไปทำไมกันเล่า? อ่ะ... เอาไปสิ:\n"
         f"☕ **Java Edition:** `{MC_SERVER_IP}`\n"
-        f"📱 **Bedrock Edition (PE):** `{MC_BEDROCK_IP}`\n"
+        f"📱 **Bedrock IP:** `{bedrock_ip}`\n"
+        f"🔌 **Bedrock Port:** `{bedrock_port}`\n"
         f"*รีบๆ เข้าไปเล่นได้แล้ว... ไม่ได้รออยู่หรอกนะ!*"
     )
     await interaction.response.send_message(reply)
