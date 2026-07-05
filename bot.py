@@ -5,6 +5,9 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from mcstatus import JavaServer
+import platform
+import psutil
+import GPUtil
 
 # Load environment variables
 load_dotenv()
@@ -137,6 +140,39 @@ async def mcip(interaction: discord.Interaction):
         f"*รีบๆ เข้าไปเล่นได้แล้ว... ไม่ได้รออยู่หรอกนะ!*"
     )
     await interaction.response.send_message(reply)
+
+@client.tree.command(name="serverstatus", description="เช็กสถานะทรัพยากรเครื่องเซิร์ฟเวอร์ (CPU, RAM, GPU, OS)")
+async def serverstatus(interaction: discord.Interaction):
+    await interaction.response.defer()
+    
+    os_info = f"{platform.system()} {platform.release()}"
+    cpu_usage = psutil.cpu_percent(interval=0.5)
+    ram_usage = psutil.virtual_memory().percent
+    
+    gpu_info = "N/A"
+    try:
+        gpus = GPUtil.getGPUs()
+        if gpus:
+            gpu_parts = []
+            for gpu in gpus:
+                gpu_parts.append(f"{gpu.name} (โหลด: {gpu.load * 100:.0f}%, อุณหภูมิ: {gpu.temperature}°C)")
+            gpu_info = ", ".join(gpu_parts)
+        else:
+            gpu_info = "ไม่พบ GPU"
+    except Exception as e:
+        print(f"GPU check error: {e}")
+        gpu_info = "เกิดข้อผิดพลาดในการตรวจสอบ GPU"
+
+    reply = (
+        f"หนวกหูน่า! เอาสถานะระบบของเครื่องเซิร์ฟเวอร์ไปดูซะ:\n"
+        f"🖥️ **ระบบปฏิบัติการ (OS):** `{os_info}`\n"
+        f"🧠 **การใช้งาน CPU:** `{cpu_usage}%`\n"
+        f"💾 **การใช้งาน RAM:** `{ram_usage}%`\n"
+        f"🎮 **การใช้งาน GPU:** `{gpu_info}`\n"
+        f"*...ไม่ได้คอยมอนิเตอร์ดูแลความปลอดภัยให้เซิร์ฟเวอร์ของนายหรอกนะตาบ้า! แค่เครื่องพังมันน่ารำคาญเฉยๆ!*"
+    )
+    
+    await interaction.followup.send(reply)
 
 MAX_HISTORY_TURNS = 20  # Limit to 20 turns of conversation (40 messages total)
 
