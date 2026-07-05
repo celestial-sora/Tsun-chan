@@ -96,35 +96,27 @@ async def mcstatus(interaction: discord.Interaction):
     
     status_info = get_mc_status(MC_SERVER_IP)
     
-    # Split Bedrock IP and Port
-    bedrock_parts = MC_BEDROCK_IP.split(":")
-    bedrock_ip = bedrock_parts[0]
-    bedrock_port = bedrock_parts[1] if len(bedrock_parts) > 1 else "19132"
-    
     if status_info["online"]:
         players_online = status_info["players_online"]
         players_max = status_info["players_max"]
         latency = status_info["latency"]
         version = status_info["version"]
         
+        # Calculate server load percentage based on players
+        load_pct = (players_online / players_max * 100) if players_max > 0 else 0
+        
         reply = (
             f"ชิ! ตรวจสอบให้แล้วล่ะ... **เซิร์ฟเวอร์เปิดอยู่หรอกนะ!**\n"
             f"🟢 **สถานะ:** ออนไลน์\n"
-            f"👥 **ผู้เล่น:** {players_online}/{players_max} คน\n"
+            f"👥 **ภาระเซิร์ฟเวอร์ (Server Load):** {players_online}/{players_max} คน ({load_pct:.0f}%)\n"
             f"📶 **ความหน่วง (Ping):** {latency} ms\n"
             f"🏷️ **เวอร์ชัน:** {version}\n"
-            f"☕ **Java IP:** `{MC_SERVER_IP}`\n"
-            f"📱 **Bedrock IP:** `{bedrock_ip}`\n"
-            f"🔌 **Bedrock Port:** `{bedrock_port}`\n"
             f"*...ไม่ได้ทำเพราะอยากให้เข้าไปเล่นด้วยกันหรอกนะตาบ้า! อย่าเข้าใจผิดล่ะ!*"
         )
     else:
         reply = (
             f"หึ... ตรวจสอบแล้ว **เซิร์ฟเวอร์ปิดอยู่น่ะสิ!**\n"
             f"🔴 **สถานะ:** ออฟไลน์\n"
-            f"🔗 **Java IP:** `{MC_SERVER_IP}`\n"
-            f"📱 **Bedrock IP:** `{bedrock_ip}`\n"
-            f"🔌 **Bedrock Port:** `{bedrock_port}`\n"
             f"*เซิร์ฟเวอร์ล่มหรือปิดอยู่รึเปล่าเนี่ย? ตาบ้าเอ๊ย ไปเช็กดูหน่อยสิ!*"
         )
         
