@@ -14,6 +14,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 MC_SERVER_IP = os.getenv("MC_SERVER_IP", "127.0.0.1:25565")
+MC_BEDROCK_IP = os.getenv("MC_BEDROCK_IP", "127.0.0.1:19132")
+
 
 # Check for required variables
 if not DISCORD_TOKEN:
@@ -106,14 +108,16 @@ async def mcstatus(interaction: discord.Interaction):
             f"👥 **ผู้เล่น:** {players_online}/{players_max} คน\n"
             f"📶 **ความหน่วง (Ping):** {latency} ms\n"
             f"🏷️ **เวอร์ชัน:** {version}\n"
-            f"🔗 **IP:** `{MC_SERVER_IP}`\n"
+            f"☕ **Java IP:** `{MC_SERVER_IP}`\n"
+            f"📱 **Bedrock IP:** `{MC_BEDROCK_IP}`\n"
             f"*...ไม่ได้ทำเพราะอยากให้เข้าไปเล่นด้วยกันหรอกนะตาบ้า! อย่าเข้าใจผิดล่ะ!*"
         )
     else:
         reply = (
             f"หึ... ตรวจสอบแล้ว **เซิร์ฟเวอร์ปิดอยู่น่ะสิ!**\n"
             f"🔴 **สถานะ:** ออฟไลน์\n"
-            f"🔗 **IP:** `{MC_SERVER_IP}`\n"
+            f"🔗 **Java IP:** `{MC_SERVER_IP}`\n"
+            f"📱 **Bedrock IP:** `{MC_BEDROCK_IP}`\n"
             f"*เซิร์ฟเวอร์ล่มหรือปิดอยู่รึเปล่าเนี่ย? ตาบ้าเอ๊ย ไปเช็กดูหน่อยสิ!*"
         )
         
@@ -123,7 +127,8 @@ async def mcstatus(interaction: discord.Interaction):
 async def mcip(interaction: discord.Interaction):
     reply = (
         f"ห-หืม? อยากได้ IP เซิร์ฟเวอร์ไปทำไมกันเล่า? อ่ะ... เอาไปสิ:\n"
-        f"🔗 IP Server: `{MC_SERVER_IP}`\n"
+        f"☕ **Java Edition:** `{MC_SERVER_IP}`\n"
+        f"📱 **Bedrock Edition (PE):** `{MC_BEDROCK_IP}`\n"
         f"*รีบๆ เข้าไปเล่นได้แล้ว... ไม่ได้รออยู่หรอกนะ!*"
     )
     await interaction.response.send_message(reply)
